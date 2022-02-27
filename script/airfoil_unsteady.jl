@@ -37,7 +37,7 @@ end
 
 # ╔═╡ 47eb9e3f-5617-417a-8924-5a38d90390e8
 begin
-# load the png file pf airfoil and specify the coordinate of nose and total length of the airfoil based on the plot
+# load the png file of airfoil and specify the coordinate of nose and total length of the airfoil based on the plot
 plot(airfoil_0012)
 nose = (12,33)
 len = 350 
@@ -60,10 +60,6 @@ x_L = range(0,1,length=100)
 # formula from wikipedia
 width = 5*airfoil_thickness.*((0.2969.*(x_L.^0.5))-(0.1260.*x_L)-(0.3516.*(x_L.^2))+(0.2843.*(x_L.^3))-(0.1015.*(x_L.^4)))  
 
-# LE_radius = 1.1019*(airfoil_thickness^2)
-# insert!(width,2,LE_radius)
-# width[2] = LE_radius
-
 # create scatter plot on the same plot
 scatter!(nose[1].+len.*x_L,
 		nose[2].-len.*width,color=:red,legend=false,  markersize = 1.5)
@@ -85,7 +81,7 @@ md"""
 # ╔═╡ 476a9f9e-cc83-437c-8f32-94617f50898a
 
 	md"""
-	A sample of real physical parameters of airfoils and air flow are defined. `Ma=0.0162` will correspond to `Re=1e5` which is the value used to set up the simulation below. The correlation between physical parameters and  simulation parameters in the simulation are not clear so it is assumed `Re` needs to be matched. This has to be clarified ! These real values will be later used in `Theodorsen lift deficiency function` to generate the `Cl vs α` behaviour for pitching airfoil.
+	A sample of real physical parameters of airfoils and air flow are defined. `Ma=0.0162` will correspond to `Re=1e5` which is the value used to set up the simulation below. The correlation between physical parameters and  simulation parameters in the simulation are not clear so it is assumed `Re` needs to be matched. This has to be clarified ! These real values will be later used in `Theodorsen lift deficiency function` to generate the `Cl vs α` behaviour for pitching airfoil as comparison. Check generated figures in git `https://github.com/subran2/UnsteadyROM.git`
 	"""
 
 # ╔═╡ 24813c95-b5ed-467d-a339-bfe914555ec9
@@ -104,8 +100,20 @@ end
 	The airfoil simulation is set up using sdf and map function. `Re`,`a`,`f`,`αₘₑₐₙ`,`αₐₘₚ` are used as input variables. `a` is the normalized distance from LE so a = [0,1]. `f` is the frequency of pitching oscillation in Hz.
 	"""
 
+# ╔═╡ a8f1ece5-28e5-45c7-a8e8-bc8aa8dd805b
+
+	md"""
+	The fixed input parameters for the unsteady airfoil simulation are defined.
+	"""
+
+# ╔═╡ 784245de-2dca-4a57-88f7-da2c08a09261
+begin
+	L = 3*2^5   # not sure how this correlates to actual physical chord length as 		             this is measured in computational cells, to be confirmed
+	U = 1.0    # not sure how this correlates to actual speed, to be confirmed
+end
+
 # ╔═╡ 11702be3-d125-4ea4-b7e9-74d34943a164
-#function airfoil(Re,a,f,αₘₑₐₙ,αₐₘₚ)
+function airfoil(Re,a,f,αₘₑₐₙ,αₐₘₚ)
 		
 
 	# fraction along chord length
@@ -128,18 +136,6 @@ end
 	return Simulation((5L+2,3L+2),[U,0.],L;
 							ν=U*L/Re,body=AutoBody(sdf,map))
 		
-end
-
-# ╔═╡ a8f1ece5-28e5-45c7-a8e8-bc8aa8dd805b
-
-	md"""
-	The fixed input parameters for the unsteady airfoil simulation are defined.
-	"""
-
-# ╔═╡ 784245de-2dca-4a57-88f7-da2c08a09261
-begin
-	L = 3*2^5   # not sure how this correlates to actual physical chord length as 		             this is measured in computational cells, to be confirmed
-	U = 1.0    # not sure how this correlates to actual speed, to be confirmed
 end
 
 # ╔═╡ 85c555bb-f584-4064-9da7-f7f1e4fd5320
@@ -172,7 +168,7 @@ begin
 	
 	Re=1e3; a=0.25; f=1.0; αₘₑₐₙ=(4*pi/180); αₐₘₚ=(4*pi/180);
 	
-	#airfoil_sim = airfoil(Re,a,f,αₘₑₐₙ,αₐₘₚ)
+	airfoil_sim = airfoil(Re,a,f,αₘₑₐₙ,αₐₘₚ)
 	ωᵩ =  2*π*f
 	period = 1/f
 	runtime = 30*period
@@ -214,29 +210,31 @@ begin
 
 	
 
-# save main simulation paramters in txt file
+# save main simulation parameters in txt file
 	data = ["Re=$Re","a=$a","f=$f","αₘₑₐₙ=$αₘₑₐₙ_deg","αₐₘₚ=$αₐₘₚ_deg","runtime=$runtime s","number of steps=$timesteps steps"]
-	writedlm("C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/data_sim.txt", data)
+	writedlm("*/data_sim.txt", data)
+
+# save various plotted figures
 
 # α vs time
 	fig_alpha_t = plot(time_vec,rad2deg.(α),xlabel="t [s]", ylabel="alpha [°]",title="Re=$Re a=$a f=$f αₘₑₐₙ=$αₘₑₐₙ_deg αₐₘₚ=$αₐₘₚ_deg",legend = false)
-	savefig(fig_alpha_t,"C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/unsteadyfig_alpha_t.svg")
+	savefig(fig_alpha_t,"*fig_alpha_t.svg")
 
 # Cl vs α 
 	fig_Fl_alpha = plot(rad2deg.(α),F_lift,xlabel="alpha [°]", ylabel="Cl",ylims = (-3,1),title="Re=$Re a=$a f=$f αₘₑₐₙ=$αₘₑₐₙ_deg αₐₘₚ=$αₐₘₚ_deg",legend = false)
-	savefig(fig_Fl_alpha,"C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/unsteadyfig_Cl_alpha.svg")
+	savefig(fig_Fl_alpha,"*y/unsteadyfig_Cl_alpha.svg")
 
 # Cl vs time
 	fig_Fl_t = plot(time_vec,F_lift,xlabel="t [s]", ylabel="Cl",ylims = (-3,1), title="Re=$Re a=$a f=$f αₘₑₐₙ=$αₘₑₐₙ_deg αₐₘₚ=$αₐₘₚ_deg",legend = false)
-	savefig(fig_Fl_t,"C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/unsteadyfig_Cl_t.svg")
+	savefig(fig_Fl_t,"*/unsteadyfig_Cl_t.svg")
 
 # Cd vs α 
 	fig_Fd_alpha = plot(rad2deg.(α),F_drag,xlabel="alpha [°]", ylabel="Cd",title="Re=$Re a=$a f=$f αₘₑₐₙ=$αₘₑₐₙ_deg αₐₘₚ=$αₐₘₚ_deg",legend = false)
-	savefig(fig_Fd_alpha,"C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/unsteadyfig_Cd_alpha.svg")
+	savefig(fig_Fd_alpha,"*/unsteadyfig_Cd_alpha.svg")
 
 # Cd vs time 
 	fig_Fd_t = plot(time_vec,F_drag,xlabel="t [s]", ylabel="Cd",title="Re=$Re a=$a f=$f αₘₑₐₙ=$αₘₑₐₙ_deg αₐₘₚ=$αₐₘₚ_deg",legend = false)
-	savefig(fig_Fd_t,"C:/Users/navar/Desktop/TUM Munich/03 Winter 2021/01 Sem Thesis/Julia/Pluto Notebook/Dr. Weymouth/unsteady/unsteadyfig_Cd_t.svg")
+	savefig(fig_Fd_t,"*/unsteadyfig_Cd_t.svg")
 
 
 end
@@ -1826,7 +1824,7 @@ version = "0.9.1+5"
 # ╠═24813c95-b5ed-467d-a339-bfe914555ec9
 # ╟─e1ab684d-f098-4e4b-8ee7-8096b2f607e0
 # ╠═11702be3-d125-4ea4-b7e9-74d34943a164
-# ╠═a8f1ece5-28e5-45c7-a8e8-bc8aa8dd805b
+# ╟─a8f1ece5-28e5-45c7-a8e8-bc8aa8dd805b
 # ╠═784245de-2dca-4a57-88f7-da2c08a09261
 # ╟─85c555bb-f584-4064-9da7-f7f1e4fd5320
 # ╠═c4c3fa5c-79bc-4d55-827f-c952b129ab5f

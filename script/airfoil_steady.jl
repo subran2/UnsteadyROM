@@ -37,7 +37,7 @@ end
 
 # ╔═╡ 71c9bc8f-921d-4df4-acc2-7321ce6648e0
 begin
-# load the png file pf airfoil and specify the coordinate of nose and total length of the airfoil based on the plot
+# load the png file of airfoil and specify the coordinate of nose and total length of the airfoil based on the plot
 plot(airfoil_0012)
 nose = (12,33)
 len = 350 
@@ -275,7 +275,7 @@ The `lift coefficient Cl` and `drag coefficient Cd` plotted against time
 # ╔═╡ d03cc81c-6319-4e07-9270-f06d62e7f3b3
 
 md"""
-Uncomment code and replace `*` with folder designation for saving the 
+Uncomment code and replace `*` with folder designation for saving the figure
  """
 
 # ╔═╡ 9d3cc5f6-e31f-4a61-90d4-8dbbb752a7c1

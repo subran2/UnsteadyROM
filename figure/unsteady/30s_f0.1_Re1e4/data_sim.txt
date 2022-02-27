@@ -1,7 +1,0 @@
-Re=10000.0
-a=0.25
-f=0.1
-αₘₑₐₙ=4.0
-αₐₘₚ=4.0
-runtime=300.0 s
-number of steps=300 steps
